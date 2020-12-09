@@ -16,7 +16,7 @@ spec:
       serviceAccount: jeeves
       containers:
         - name: jeeves
-          image: spazzy757/jeeves
+          image: containersol/jeeves
           imagePullPolicy: Always
           ports:
           - containerPort: 8000

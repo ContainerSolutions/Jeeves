@@ -134,7 +134,7 @@ func createAnonymizastionJob(link string, candidateId string) error {
 					Containers: []apiv1.Container{
 						{
 							Name:  "anonymizer",
-							Image: "spazzy757/anonymizer:latest",
+							Image: "containersol/anonymizer:latest",
 							Args: []string{
 								link,
 								candidateId,
