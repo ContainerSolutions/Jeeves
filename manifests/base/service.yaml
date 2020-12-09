@@ -1,0 +1,12 @@
+# https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeeves
+spec:
+  selector:
+    app: jeeves
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000 

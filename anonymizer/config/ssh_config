@@ -1,0 +1,5 @@
+Host *
+    Hostname gitlab.com
+    IdentityFile /infra/.user/.ssh/id_rsa
+    StrictHostKeyChecking No
+    UserKnownHostsFile=/dev/null
