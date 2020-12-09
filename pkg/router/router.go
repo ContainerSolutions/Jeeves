@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ContainerSolutions/jeeves/pkg/helpers"
+	jslack "github.com/ContainerSolutions/jeeves/pkg/slack"
 	"github.com/gorilla/mux"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -28,14 +29,22 @@ func GetRouter() *mux.Router {
 }
 
 func SlackEventHandler(w http.ResponseWriter, r *http.Request) {
-	verificationToken := helpers.GetEnv("SLACK_VERIFICATION_TOKEN", "")
+	signingSecret := helpers.GetEnv("SLACK_SIGNING_SECRET", "")
 	authToken := helpers.GetEnv("SLACK_AUTHENTICATION_TOKEN", "")
 
+	check, err := jslack.VerifyWebHook(r, signingSecret)
+	if handleError(err) || !check {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
+	_, _ = buf.ReadFrom(r.Body)
 	body := buf.String()
-	eventsAPIEvent, e := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{VerificationToken: verificationToken}))
-	if e != nil {
+	eventsAPIEvent, e := slackevents.ParseEvent(
+		json.RawMessage(body),
+		slackevents.OptionNoVerifyToken(),
+	)
+	if handleError(e) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -59,7 +68,7 @@ func SlackEventHandler(w http.ResponseWriter, r *http.Request) {
 			url, candidateId, err := getLinkAndId(ev.Text)
 			err = createAnonymizastionJob(url, candidateId)
 			if handleError(err) {
-				api.PostMessage(ev.Channel, slack.MsgOptionText("There was an Error Anonymizing Repo Please Contact Brendan", false))
+				_, _, _ = api.PostMessage(ev.Channel, slack.MsgOptionText("There was an Error Anonymizing Repo Please Contact Brendan", false))
 				w.WriteHeader(http.StatusOK)
 				return
 			}
