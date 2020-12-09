@@ -23,11 +23,11 @@ spec:
           env:
           - name: SERVER_HOST
             value: 0.0.0.0
-          - name: SLACK_VERIFICATION_TOKEN
+          - name: SLACK_SIGNING_SECRET
             valueFrom:
               secretKeyRef:
                 name: slackauth
-                key: SLACK_VERIFICATION_TOKEN
+                key: SLACK_SIGNING_SECRET
           - name: SLACK_AUTHENTICATION_TOKEN
             valueFrom:
               secretKeyRef:
