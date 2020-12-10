@@ -1,3 +1,4 @@
+![CICD](https://github.com/ContainerSolutions/Jeeves/workflows/CICD/badge.svg)
 # Api Review Anonymizer
 
 ## In order to use you will need access to the following
