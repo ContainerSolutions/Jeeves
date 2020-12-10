@@ -13,6 +13,7 @@ require (
 	github.com/iovisor/kubectl-trace v0.1.0-rc.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/slack-go/slack v0.7.3
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
