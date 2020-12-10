@@ -9,7 +9,6 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
   name: jeeves
-  namespace: jeeves
 spec:
   rules:
   - host: jeeves.apps.csol.cloud
