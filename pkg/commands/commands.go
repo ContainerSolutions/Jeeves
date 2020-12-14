@@ -41,12 +41,14 @@ func getLinkAndId(Message string) (string, string, error) {
 	log.Printf("%v", Message)
 	res := strings.Replace(Message, "https://gitlab.com/", "", -1)
 	res = strings.Replace(res, "\u00a0", " ", -1)
+	res = strings.Replace(res, "<", "", -1)
+	res = strings.Replace(res, ">", "", -1)
 	args := strings.Split(res, " ")
 	log.Printf("%v", args)
 	if len(args) != 2 {
 		return "", "", fmt.Errorf("Wrong Format")
 	}
-	return args[0], args[1], nil
+	return strings.ToLower(args[0]), args[1], nil
 }
 
 func checkErr(err error) bool {
