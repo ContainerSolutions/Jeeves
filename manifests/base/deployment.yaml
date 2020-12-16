@@ -14,15 +14,25 @@ spec:
         app: jeeves
     spec:
       serviceAccount: jeeves
+      volumes:
+        - name: jeeves-github
+          secret:
+            secretName: jeeves-github
       containers:
         - name: jeeves
           image: containersol/jeeves
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
+          volumeMounts:
+          - name: jeeves-github
+            readOnly: true
+            mountPath: "/secrets"
           env:
           - name: SERVER_HOST
             value: 0.0.0.0
+          - name: SECRET_PATH
+            value: "/secrets"
           - name: SLACK_SIGNING_SECRET
             valueFrom:
               secretKeyRef:

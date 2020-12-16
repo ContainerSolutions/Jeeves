@@ -3,16 +3,13 @@ package router
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/ContainerSolutions/jeeves/pkg/commands"
 	"github.com/ContainerSolutions/jeeves/pkg/config"
-	"github.com/ContainerSolutions/jeeves/pkg/kubernetes"
 	jslack "github.com/ContainerSolutions/jeeves/pkg/slack"
 	"github.com/gorilla/mux"
 	"github.com/slack-go/slack"
@@ -22,19 +19,24 @@ import (
 // GetRouter returns the routes for the server
 func GetRouter() *mux.Router {
 	r := mux.NewRouter()
+	r.HandleFunc("/github/events", githubEventHandler)
+	r.HandleFunc("/slack/events", slackEventHandler)
 	r.HandleFunc("/anonymize", anonEventHandler)
-	r.HandleFunc("/", slackEventHandler)
 	return r
 }
 
 // anonEventHandler handler for the /anonymize command
 func anonEventHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.JeevesConfig{}
-	cfg.GetConfig()
+	cfgErr := cfg.GetConfig()
+	if handleError(cfgErr) {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	verifier, err := slack.NewSecretsVerifier(
 		r.Header,
-		cfg.SigningToken,
+		cfg.SlackSigningToken,
 	)
 	if handleError(err) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -49,12 +51,19 @@ func anonEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// githubEventHandler The Event API handler for the github APP
+func githubEventHandler(w http.ResponseWriter, r *http.Request) {}
+
 // slackEventHandler The Event API handler for the slack APP
 func slackEventHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.JeevesConfig{}
-	cfg.GetConfig()
+	cfgErr := cfg.GetConfig()
+	if handleError(cfgErr) {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	check, err := jslack.VerifyWebHook(r, cfg.SigningToken)
+	check, err := jslack.VerifyWebHook(r, cfg.SlackSigningToken)
 	if handleError(err) || !check {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -71,6 +80,7 @@ func slackEventHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// If the Slack Events API sends a Challenge it will be handled by this
 	if eventsAPIEvent.Type == slackevents.URLVerification {
 		var r *slackevents.ChallengeResponse
 		err := json.Unmarshal([]byte(body), &r)
@@ -85,28 +95,9 @@ func slackEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	if eventsAPIEvent.Type == slackevents.CallbackEvent {
 		innerEvent := eventsAPIEvent.InnerEvent
-		switch ev := innerEvent.Data.(type) {
+		switch innerEvent.Data.(type) {
 		case *slackevents.AppMentionEvent:
-			// TODO deprecate this functionality
-			_, _, _ = cfg.SlackApi.PostMessage(
-				ev.Channel,
-				slack.MsgOptionText("Anonymizing Repo", false),
-			)
-			url, candidateId, err := getLinkAndId(ev.Text)
-			err = kubernetes.CreateAnonymizastionJob(&cfg, url, candidateId)
-			if handleError(err) {
-				_, _, _ = cfg.SlackApi.PostMessage(
-					ev.Channel,
-					slack.MsgOptionText("There was an Error Anonymizing Repo Please Contact Brendan", false),
-				)
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-			_, _, _ = cfg.SlackApi.PostMessage(
-				ev.Channel,
-				slack.MsgOptionText("API Anonymized", false),
-			)
-
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
@@ -119,17 +110,4 @@ func handleError(err error) bool {
 		return true
 	}
 	return false
-}
-
-func getLinkAndId(Message string) (string, string, error) {
-	log.Printf("%v", Message)
-	res := strings.Replace(Message, "<https://gitlab.com/", "", -1)
-	res = strings.Replace(res, ">\u00a0", " ", -1)
-	res = strings.Replace(res, "\u00a0", " ", -1)
-	args := strings.Split(res, " ")
-	log.Printf("%v", args)
-	if len(args) != 3 {
-		return "", "", fmt.Errorf("Wrong Format")
-	}
-	return args[1], args[2], nil
 }

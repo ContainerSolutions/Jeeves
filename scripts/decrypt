@@ -1,0 +1,25 @@
+#! /bin/bash
+
+gcloud kms decrypt \
+       --key=jeeves \
+       --keyring=jeeves \
+       --location=global \
+       --project=cs-engineering-256009 \
+       --plaintext-file=manifests/base/secrets.yaml \
+       --ciphertext-file=manifests/base/secrets.enc
+
+gcloud kms decrypt \
+       --key=jeeves \
+       --keyring=jeeves \
+       --project=cs-engineering-256009 \
+       --location=global \
+       --plaintext-file=manifests/production/secrets.yaml \
+       --ciphertext-file=manifests/production/secrets.enc
+
+gcloud kms decrypt \
+       --key=jeeves \
+       --keyring=jeeves \
+       --project=cs-engineering-256009 \
+       --location=global \
+       --plaintext-file=manifests/staging/secrets.yaml \
+       --ciphertext-file=manifests/staging/secrets.enc
