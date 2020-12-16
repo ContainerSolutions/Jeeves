@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ContainerSolutions/jeeves/pkg/config"
+	log "github.com/sirupsen/logrus"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,10 +16,11 @@ func CreateAnonymizastionJob(
 	link string,
 	candidateId string,
 ) error {
-	jobsClient := cfg.ClientSet.BatchV1().Jobs(cfg.Namespace)
+	log.Printf("%v", cfg.JobNamespace)
+	jobsClient := cfg.K8sClientSet.BatchV1().Jobs(cfg.JobNamespace)
 	commonMeta := metav1.ObjectMeta{
 		Name:      strings.ToLower(candidateId),
-		Namespace: cfg.Namespace,
+		Namespace: cfg.JobNamespace,
 	}
 	var secretMode int32 = 0600
 	job := &batchv1.Job{
