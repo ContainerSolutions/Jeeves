@@ -7,7 +7,6 @@ import (
 
 	"github.com/ContainerSolutions/jeeves/pkg/config"
 	"github.com/ContainerSolutions/jeeves/pkg/kubernetes"
-	log "github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 )
 
