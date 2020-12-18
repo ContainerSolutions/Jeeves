@@ -13,8 +13,7 @@ import (
 
 func CreateAnonymizastionJob(
 	cfg *config.JeevesConfig,
-	link string,
-	candidateId string,
+	repoType, repo, candidateId string,
 ) error {
 	log.Printf("%v", cfg.JobNamespace)
 	jobsClient := cfg.K8sClientSet.BatchV1().Jobs(cfg.JobNamespace)
@@ -63,9 +62,10 @@ func CreateAnonymizastionJob(
 					Containers: []apiv1.Container{
 						{
 							Name:  "anonymizer",
-							Image: "containersol/anonymizer:latest",
+							Image: "containersol/anonymizer:v1.0.0",
 							Args: []string{
-								link,
+								repoType,
+								repo,
 								candidateId,
 							},
 							Env: []apiv1.EnvVar{

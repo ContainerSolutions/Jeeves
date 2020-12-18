@@ -1,19 +1,20 @@
 package commands
 
 import (
-	"bytes"
 	"github.com/ContainerSolutions/jeeves/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"strings"
 
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 )
 
 const jeevesURL = "https://jeeves.test.example/anonymize"
 
-func TestClientGetCat(t *testing.T) {
+func TestAnonymizeHandler(t *testing.T) {
 	mux, serverUrl, teardown := GetMockClient()
 	defer teardown()
 
@@ -26,31 +27,69 @@ func TestClientGetCat(t *testing.T) {
 			func(w http.ResponseWriter, r *http.Request) {},
 		)
 		cfg.GetConfig()
-		body := []byte(`
-        {
-            "token": "gIkuvaNzQIHg97ATvDxqgjtO",
-            "team_id": "T0001",
-            "team_domain": "example",
-            "enterprise_id": "E0001",
-            "enterprise_name": "TEST",
-            "channel_id": "C2147483705",
-            "channel_name": "test",
-            "user_id": "U2147483697",
-            "user_name": "Steve",
-            "command": "/weather",
-            "text": "https://gitlab.com/user/api-excercies TEST0001",
-            "response_url": "https://hooks.slack.com/commands/1234/5678",
-            "trigger_id": "13345224609.738474920.8088930838d88f008e0",
-            "api_app_id": "A123456"
-        }
-        `)
-		request, err := http.NewRequest(
+		body := url.Values{
+			"command":         []string{"/anonymize"},
+			"team_domain":     []string{"team"},
+			"enterprise_id":   []string{"E0001"},
+			"enterprise_name": []string{"Globular%20Construct%20Inc"},
+			"channel_id":      []string{"C1234ABCD"},
+			"text":            []string{"https://gitlab.com/random-user/api-excercise Test00001"},
+			"team_id":         []string{"T1234ABCD"},
+			"user_id":         []string{"U1234ABCD"},
+			"user_name":       []string{"username"},
+			"response_url":    []string{"https://hooks.slack.com/commands/XXXXXXXX/00000000000/YYYYYYYYYYYYYY"},
+			"token":           []string{"valid"},
+			"channel_name":    []string{"channel"},
+			"trigger_id":      []string{"0000000000.1111111111.222222222222aaaaaaaaaaaaaa"},
+			"api_app_id":      []string{"A123456"},
+		}
+		req, err := http.NewRequest(
 			http.MethodPost,
 			jeevesURL,
-			bytes.NewReader(body),
+			strings.NewReader(body.Encode()),
 		)
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		assert.Equal(t, nil, err)
-		err = AnonymizeHandler(&cfg, request)
+		err = AnonymizeHandler(&cfg, req)
+		assert.Equal(t, nil, err)
+	})
+}
+
+func TestGetLinkAndId(t *testing.T) {
+	t.Run("Test Parse Args Succesful - Gitlab", func(t *testing.T) {
+		message := "https://gitlab.com/random-user/api-excercise Test00001"
+		repoType, repo, candidateId, err := parseArgs(message)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "gitlab", repoType)
+		assert.Equal(t, "random-user/api-excercise", repo)
+		assert.Equal(t, "Test00001", candidateId)
+		assert.Equal(t, nil, err)
+	})
+	t.Run("Test Parse Args Succesful - Github", func(t *testing.T) {
+		message := "<https://github.com/random-user/api-excercise>\u00a0Test00001"
+		repoType, repo, candidateId, err := parseArgs(message)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "github", repoType)
+		assert.Equal(t, "random-user/api-excercise", repo)
+		assert.Equal(t, "Test00001", candidateId)
+		assert.Equal(t, nil, err)
+	})
+	t.Run("Test Parse Args Succesful - Double Spaces", func(t *testing.T) {
+		message := "<https://github.com/random-user/api-excercise>\u00a0\u00a0Test00001"
+		repoType, repo, candidateId, err := parseArgs(message)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "github", repoType)
+		assert.Equal(t, "random-user/api-excercise", repo)
+		assert.Equal(t, "Test00001", candidateId)
+		assert.Equal(t, nil, err)
+	})
+	t.Run("Test Parse Args Succesful - Uppercase", func(t *testing.T) {
+		message := "<https://github.com/random-User/Api-Excercise>\u00a0\u00a0Test00001"
+		repoType, repo, candidateId, err := parseArgs(message)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "github", repoType)
+		assert.Equal(t, "random-user/api-excercise", repo)
+		assert.Equal(t, "Test00001", candidateId)
 		assert.Equal(t, nil, err)
 	})
 }
