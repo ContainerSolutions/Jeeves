@@ -37,8 +37,8 @@ func CreateAnonymizastionJob(
 									SecretName: "sshkey",
 									Items: []apiv1.KeyToPath{
 										apiv1.KeyToPath{
-											Key:  "id_rsa",
-											Path: "id_rsa",
+											Key:  "id_ed25519",
+											Path: "id_ed25519",
 										},
 									},
 									DefaultMode: &secretMode,
@@ -75,7 +75,7 @@ func CreateAnonymizastionJob(
 								},
 								apiv1.EnvVar{
 									Name:  "CS_REVIEWER_KEY",
-									Value: "/infra/.user/.ssh/id_rsa",
+									Value: "/infra/.user/.ssh/id_ed25519",
 								},
 							},
 							VolumeMounts: []apiv1.VolumeMount{
