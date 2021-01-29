@@ -1,16 +1,19 @@
 #!/bin/bash
-set -e
+set -ex
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
-user=$1
-user_id=$2
-dir=$(echo $1 | sed 's/\//-/g')
+user=$2
+user_id=$3
+repo_type=$1
+
+dir=$(echo $user | sed 's/\//-/g')
+
 keyfile=$CS_REVIEWER_KEY
 # Clone Repo
 echo "######################################"
 echo "Cloning Repo"
 echo "######################################"
-git clone git@gitlab.com:$user.git $dir
+git clone git@$repo_type:$user.git $dir
 
 # This will loop through all branches on the remote and sync them with local
 

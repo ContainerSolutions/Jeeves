@@ -15,7 +15,7 @@ func AddSchedule(c *cron.Cron) {
 	if handleErr(cfgErr) {
 		return
 	}
-	_, _ = c.AddFunc("*/30 * * * *", func() {
+	_, _ = c.AddFunc("*/5 * * * *", func() {
 		gClient, err := jclient.GetInstallationClient(cfg.GithubInstallationID)
 		if handleErr(err) {
 			return

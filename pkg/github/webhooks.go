@@ -69,7 +69,6 @@ func CheckPullRequests(client *github.Client) {
 		return
 	}
 	for _, pr := range prs {
-		log.Printf("%v", pr.GetMergeableState())
 		if pr.GetMergeable() {
 			// Send a Message On The PR
 			msg := "CONGRATULATIONS! Thank You for Submitting your API Excercise, If your email is on your Github Account and you fall are eligible according to our Terms and Conditions one of our Talent Team will reach out to you"
