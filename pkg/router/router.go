@@ -14,7 +14,7 @@ import (
 	"github.com/ContainerSolutions/jeeves/pkg/config"
 	jgithub "github.com/ContainerSolutions/jeeves/pkg/github"
 	jslack "github.com/ContainerSolutions/jeeves/pkg/slack"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v33/github"
 	"github.com/gorilla/mux"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -79,7 +79,7 @@ func githubEventHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = jgithub.IncomingWebhook(ctx, r, payload, jClient)
+	err = jgithub.IncomingWebhook(ctx, cfg, r, payload, jClient)
 	if handleError(err) {
 		w.WriteHeader(http.StatusBadRequest)
 		return

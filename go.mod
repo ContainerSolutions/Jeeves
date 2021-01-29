@@ -10,9 +10,11 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-github/v32 v32.1.0
+	github.com/google/go-github/v33 v33.0.0
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/iovisor/kubectl-trace v0.1.0-rc.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/slack-go/slack v0.7.3
 	github.com/stretchr/testify v1.4.0

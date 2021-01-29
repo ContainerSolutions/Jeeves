@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/ContainerSolutions/jeeves/pkg/config"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
