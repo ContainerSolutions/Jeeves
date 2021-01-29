@@ -2,15 +2,19 @@ package router
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 
+	jclient "github.com/ContainerSolutions/jeeves/pkg/client"
 	"github.com/ContainerSolutions/jeeves/pkg/commands"
 	"github.com/ContainerSolutions/jeeves/pkg/config"
+	jgithub "github.com/ContainerSolutions/jeeves/pkg/github"
 	jslack "github.com/ContainerSolutions/jeeves/pkg/slack"
+	"github.com/google/go-github/v32/github"
 	"github.com/gorilla/mux"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -52,7 +56,36 @@ func anonEventHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // githubEventHandler The Event API handler for the github APP
-func githubEventHandler(w http.ResponseWriter, r *http.Request) {}
+func githubEventHandler(w http.ResponseWriter, r *http.Request) {
+	cfg := config.JeevesConfig{}
+	cfgErr := cfg.GetConfig()
+	if handleError(cfgErr) {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	payload, validationErr := github.ValidatePayload(r, []byte(cfg.GithubSecretKey))
+	if handleError(validationErr) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	instllationID, err := getInstallationId(payload)
+	if handleError(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	jClient, err := jclient.GetInstallationClient(instllationID)
+	ctx := context.Background()
+	if handleError(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = jgithub.IncomingWebhook(ctx, r, payload, jClient)
+	if handleError(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
 
 // slackEventHandler The Event API handler for the slack APP
 func slackEventHandler(w http.ResponseWriter, r *http.Request) {
@@ -110,4 +143,23 @@ func handleError(err error) bool {
 		return true
 	}
 	return false
+}
+
+// Payload is used to get the installation ID from payload
+type Payload struct {
+	Installation Installation `json:"installation"`
+}
+
+// Installation is used to get the installation ID from the payload
+type Installation struct {
+	ID int64 `json:"id"`
+}
+
+func getInstallationId(payload []byte) (int64, error) {
+	p := &Payload{}
+	err := json.Unmarshal(payload, p)
+	if err != nil {
+		return 0, err
+	}
+	return p.Installation.ID, err
 }
