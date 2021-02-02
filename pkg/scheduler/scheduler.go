@@ -20,7 +20,7 @@ func AddSchedule(c *cron.Cron) {
 		if handleErr(err) {
 			return
 		}
-		jgithub.CheckPullRequests(gClient)
+		jgithub.CheckPullRequests(cfg, gClient)
 	})
 }
 
