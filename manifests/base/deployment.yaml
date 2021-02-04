@@ -29,10 +29,25 @@ spec:
             readOnly: true
             mountPath: "/secrets"
           env:
+          - name: APPLICATION_ID
+            valueFrom:
+              secretKeyRef:
+                name: jeeves-github
+                key: jeeves-application-id
           - name: SERVER_HOST
             value: 0.0.0.0
           - name: SECRET_PATH
             value: "/secrets"
+          - name: GITHUB_INSTALLATION_ID
+            valueFrom:
+              secretKeyRef:
+                name: jeeves-github
+                key: jeeves-installation-id
+          - name: SLACK_CHANNEL_ID
+            valueFrom:
+              secretKeyRef:
+                name: slackauth
+                key: SLACK_CHANNEL_ID
           - name: SLACK_SIGNING_SECRET
             valueFrom:
               secretKeyRef:

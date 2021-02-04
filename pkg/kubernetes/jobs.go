@@ -36,8 +36,8 @@ func CreateAnonymizastionJob(
 									SecretName: "sshkey",
 									Items: []apiv1.KeyToPath{
 										apiv1.KeyToPath{
-											Key:  "id_rsa",
-											Path: "id_rsa",
+											Key:  "id_ed25519",
+											Path: "id_ed25519",
 										},
 									},
 									DefaultMode: &secretMode,
@@ -62,7 +62,7 @@ func CreateAnonymizastionJob(
 					Containers: []apiv1.Container{
 						{
 							Name:  "anonymizer",
-							Image: "containersol/anonymizer:v1.0.0",
+							Image: "containersol/anonymizer:v1.0.1",
 							Args: []string{
 								repoType,
 								repo,
@@ -73,17 +73,8 @@ func CreateAnonymizastionJob(
 									Name:  "GOOGLE_APPLICATION_CREDENTIALS",
 									Value: "/infra/.user/credentials/credentials.json",
 								},
-								apiv1.EnvVar{
-									Name:  "CS_REVIEWER_KEY",
-									Value: "/infra/.user/.ssh/id_rsa",
-								},
 							},
 							VolumeMounts: []apiv1.VolumeMount{
-								apiv1.VolumeMount{
-									Name:      "sshkey",
-									MountPath: "/infra/.user/.ssh/",
-									ReadOnly:  true,
-								},
 								apiv1.VolumeMount{
 									Name:      "credentials",
 									MountPath: "/infra/.user/credentials/",

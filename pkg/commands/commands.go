@@ -43,7 +43,6 @@ func AnonymizeHandler(
 	return nil
 }
 
-// getLinkAndId Adhoc function that parses command args
 func parseArgs(message string) (string, string, string, error) {
 	repoType := checkRepo(message)
 	res := strings.Replace(message, "gitlab.com/", "", -1)

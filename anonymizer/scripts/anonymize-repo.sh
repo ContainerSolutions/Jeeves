@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
 user=$2
