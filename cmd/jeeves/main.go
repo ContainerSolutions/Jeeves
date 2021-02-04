@@ -11,6 +11,8 @@ import (
 
 	"github.com/ContainerSolutions/jeeves/pkg/helpers"
 	"github.com/ContainerSolutions/jeeves/pkg/router"
+	"github.com/ContainerSolutions/jeeves/pkg/scheduler"
+	"github.com/robfig/cron/v3"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -49,6 +51,17 @@ func main() {
 			}).Fatal("Server Start Fail")
 		}
 	}()
+	// start scheduled jobs
+	c := cron.New(
+		cron.WithLogger(
+			cron.VerbosePrintfLogger(
+				log.New(),
+			),
+		),
+	)
+	scheduler.AddSchedule(c)
+	c.Start()
+
 	// Prints out ascii art
 	fmt.Println(startUpLog)
 	log.WithFields(log.Fields{
@@ -67,4 +80,5 @@ func main() {
 		}).Fatal("Graceful Shutdown Failed")
 	}
 	log.Info("Shutting Down Gracefully")
+	c.Stop()
 }

@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	fake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	"strconv"
 )
 
 const (
@@ -20,13 +21,15 @@ const (
 )
 
 type JeevesConfig struct {
-	JobNamespace        string               `json:",omitempty"`
-	SlackApi            *slack.Client        `json:",omitempty"`
-	SlackSigningToken   string               `json:",omitempty"`
-	K8sClientSet        kubernetes.Interface `json:",omitempty"`
-	GithubSecretKey     string               `json:",omitempty"`
-	GithubPrivateKey    string               `json:",omitempty"`
-	GithubApplicationID string               `json:",omitempty"`
+	JobNamespace         string               `json:",omitempty"`
+	SlackApi             *slack.Client        `json:",omitempty"`
+	SlackSigningToken    string               `json:",omitempty"`
+	SlackChannelID       string               `json:",omitempty"`
+	K8sClientSet         kubernetes.Interface `json:",omitempty"`
+	GithubSecretKey      string               `json:",omitempty"`
+	GithubPrivateKey     string               `json:",omitempty"`
+	GithubApplicationID  string               `json:",omitempty"`
+	GithubInstallationID int64                `json:",omitempty"`
 }
 
 func (cfg *JeevesConfig) GetConfig() error {
@@ -44,6 +47,13 @@ func (cfg *JeevesConfig) GetConfig() error {
 
 	// Set Slack Signing Token
 	cfg.SlackSigningToken = helpers.GetEnv("SLACK_SIGNING_SECRET", "")
+
+	// Set Slack Channel ID
+	cfg.SlackChannelID = helpers.GetEnv("SLACK_CHANNEL_ID", "")
+
+	// Set Slack Channel ID
+	githubInstallationID, _ := strconv.Atoi(helpers.GetEnv("GITHUB_INSTALLATION_ID", ""))
+	cfg.GithubInstallationID = int64(githubInstallationID)
 
 	// Set Slack Client
 	authToken := helpers.GetEnv("SLACK_AUTHENTICATION_TOKEN", "")
